@@ -1,0 +1,88 @@
+import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards, Request } from '@nestjs/common';
+import { UsersService } from './users.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
+
+@Controller('users')
+export class UsersController {
+    constructor(private readonly usersService: UsersService) { }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('profile')
+    getProfile(@Request() req: any) {
+        return this.usersService.getProfile(req.user.userId);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('follow/:businessId')
+    followBusiness(@Param('businessId') businessId: string, @Request() req: any) {
+        return this.usersService.followBusiness(req.user.userId, businessId);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Delete('follow/:businessId')
+    unfollowBusiness(@Param('businessId') businessId: string, @Request() req: any) {
+        return this.usersService.unfollowBusiness(req.user.userId, businessId);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('business/:id/report')
+    reportBusiness(
+        @Param('id') id: string,
+        @Request() req: any,
+        @Body('reason') reason: string,
+        @Body('notes') notes?: string,
+    ) {
+        return this.usersService.reportBusiness(id, req.user.userId, reason, notes);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('provider/:id/report')
+    reportProvider(
+        @Param('id') id: string,
+        @Request() req: any,
+        @Body('reason') reason: string,
+        @Body('notes') notes?: string,
+    ) {
+        return this.usersService.reportServiceProvider(id, req.user.userId, reason, notes);
+    }
+    @UseGuards(JwtAuthGuard)
+    @Patch('profile')
+    updateProfile(@Request() req: any, @Body() data: any) {
+        return this.usersService.updateProfile(req.user.userId, data);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Patch('branch-location')
+    updateBranchLocation(@Request() req: any, @Body() data: any) {
+        return this.usersService.updateBranchLocation(req.user.userId, data);
+    }
+
+    @Get('businesses')
+    getBusinesses() {
+        return this.usersService.findAllBusinesses();
+    }
+
+    @UseGuards(OptionalJwtAuthGuard)
+    @Get('business/:id')
+    getBusiness(@Param('id') id: string, @Request() req: any) {
+        return this.usersService.findOneBusiness(id, req.user?.userId);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('nominee')
+    getNominee(@Request() req: any) {
+        return this.usersService.getNominee(req.user.userId);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('nominee')
+    updateNominee(@Request() req: any, @Body() data: { name: string; contact: string; relationship: string }) {
+        return this.usersService.updateNominee(req.user.userId, data);
+    }
+    @UseGuards(JwtAuthGuard)
+    @Delete('account')
+    deleteAccount(@Request() req: any) {
+        return this.usersService.deleteAccount(req.user.userId);
+    }
+}
